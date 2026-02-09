@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=invalid-name
 """
-compute_statistics.py
+computeStatistics.py
 
 Reads one or more files containing numbers (one per line),
 computes descriptive statistics using only basic algorithms,

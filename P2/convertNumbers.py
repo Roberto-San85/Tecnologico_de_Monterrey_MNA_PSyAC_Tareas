@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=invalid-name
 """
-convert_numbers.py
+convertNumbers.py
 
 Reads one or more files containing non-negative integers (one per line) and
 converts each value to binary and hexadecimal using manual algorithms
