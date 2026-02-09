@@ -40,20 +40,29 @@ def compute_median(data: List[float]) -> float:
     return sorted_data[mid]
 
 
-def compute_mode(data: List[float]) -> Union[float, List[float]]:
+
+def compute_mode(data: List[float]) -> Union[float, List[float], None]:
     """
     Return the mode of the list.
-    If multiple modes exist, return a list of the modal values.
+    - If all values appear exactly once, return None (no mode).
+    - If one value is the most frequent, return that value.
+    - If multiple values tie, return a list of modes.
     """
     freq = {}
     for num in data:
         freq[num] = freq.get(num, 0) + 1
 
     max_count = max(freq.values())
+
+    # If max_count is 1, all values occur only once → no mode.
+    if max_count == 1:
+        return None
+
     modes = [k for k, v in freq.items() if v == max_count]
 
     if len(modes) == 1:
         return modes[0]
+
     return modes
 
 
@@ -107,12 +116,14 @@ def format_stats_block(
     mean = compute_mean(data)
     median = compute_median(data)
     mode = compute_mode(data)
+    if mode is None:
+        mode = "#N/A" 
     variance = compute_variance(data, mean)
     std_dev = compute_std_dev(variance)
 
     block = (
         f"===== {title} =====\n"
-        f"Total numbers processed: {len(data)}\n"
+        f"Total numbers processed: {len(data) + invalid_count}\n"
         f"Invalid lines ignored: {invalid_count}\n"
         f"Mean: {mean}\n"
         f"Median: {median}\n"
