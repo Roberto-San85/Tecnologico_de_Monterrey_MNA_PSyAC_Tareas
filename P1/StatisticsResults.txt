@@ -1,0 +1,9 @@
+===== Statistics Results =====
+Total numbers processed: 400
+Mean: 242.32
+Median: 239.5
+Mode: [393.0, 170.0]
+Variance: 21099.917599999997
+Standard Deviation: 145.25810683056557
+Execution Time: 0.000281 seconds
+==============================
