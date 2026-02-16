@@ -1,0 +1,10 @@
+==== Resultados de Cómputo de Ventas ====
+Ventas leídas: 46
+Ventas válidas: 44
+Registros con avisos/errores: 2
+Costo total: 165,235.37
+Tiempo de ejecución (segundos): 0.003270
+
+---- Avisos / Errores ----
+[WARN] Venta 22 (ID 6): 'Elotes' no está en el catálogo.
+[WARN] Venta 36 (ID 9): 'Frijoles' no está en el catálogo.

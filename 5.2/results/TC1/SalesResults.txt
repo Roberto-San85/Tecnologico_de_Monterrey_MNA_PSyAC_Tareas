@@ -1,0 +1,6 @@
+==== Resultados de Cómputo de Ventas ====
+Ventas leídas: 46
+Ventas válidas: 46
+Registros con avisos/errores: 0
+Costo total: 2,481.86
+Tiempo de ejecución (segundos): 0.002641
