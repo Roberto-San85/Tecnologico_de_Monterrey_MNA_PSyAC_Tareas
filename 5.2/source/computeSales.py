@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# pylint: disable=invalid-name
 """
-compute_sales.py
+Script de línea de comandos para calcular el costo total de ventas.
 
-Programa de línea de comandos que calcula el costo total de ventas a partir de:
-1) Un catálogo de productos en JSON con campos `title` (nombre) y `price` (precio >= 0).
-2) Un registro de ventas en JSON con campos: `SALE_ID`, `SALE_Date` (dd/mm/yy),
-   `Product` (nombre del producto) y `Quantity` (entero, puede ser negativo).
+Entrada:
+1) Catálogo JSON con `title` (nombre) y `price` (>= 0).
+2) Ventas JSON con `SALE_ID`, `SALE_Date` (dd/mm/yy),
+   `Product` (nombre) y `Quantity` (entero, puede ser negativo).
 
 Características:
-- Soporta cantidades negativas (devoluciones/ajustes).
-- Maneja errores de datos sin detener la ejecución; los reporta en consola.
-- Imprime un resumen en pantalla y lo guarda en `SalesResults.txt`.
-- Incluye el tiempo total de ejecución.
-- Comparación de productos insensible a mayúsculas/minúsculas.
+- Acepta cantidades negativas (devoluciones o ajustes).
+- Reporta errores sin detener la ejecución.
+- Imprime un resumen y lo guarda en `SalesResults.txt`.
+- Incluye tiempo total de ejecución.
+- Búsqueda de producto sin sensibilidad a mayúsculas.
 
 Uso:
-    python compute_sales.py priceCatalogue.json salesRecord.json
+    python computeSales.py priceCatalogue.json salesRecord.json
 """
 
 from __future__ import annotations
@@ -40,7 +41,7 @@ def _leer_json_lista(ruta: str) -> List[Any]:
 
     Raises:
         SystemExit: Si el archivo no existe, si no es JSON válido
-                    o si el contenido no es una lista.
+        o si el contenido no es una lista.
     """
     try:
         with open(ruta, "r", encoding="utf-8") as fobj:
@@ -64,19 +65,16 @@ def _leer_json_lista(ruta: str) -> List[Any]:
 
 def cargar_catalogo(ruta_catalogo: str) -> Dict[str, float]:
     """
-    Carga el catálogo de precios con formato:
-    [
-      { "title": "Brown eggs", "price": 28.1, ... },
-      ...
-    ]
+    Carga el catálogo con formato:
+    [{ "title": "Brown eggs", "price": 28.1, ... }]
 
-    Se normaliza la clave del producto a minúsculas.
+    La clave del diccionario se normaliza a minúsculas.
 
     Args:
-        ruta_catalogo: Ruta del archivo JSON del catálogo.
+        ruta_catalogo: Ruta del archivo JSON.
 
     Returns:
-        Diccionario { nombre_producto_lower: precio_unitario }.
+        Diccionario { nombre_producto_lower: precio }.
 
     Raises:
         SystemExit: Si no se obtiene al menos un producto válido.
@@ -88,7 +86,7 @@ def cargar_catalogo(ruta_catalogo: str) -> Dict[str, float]:
 
     for idx, item in enumerate(data, start=1):
         if not isinstance(item, dict):
-            print(f"[WARN] Catálogo fila {idx}: no es un objeto JSON. Se omite.")
+            print(f"[WARN] Catálogo fila {idx}: no es objeto JSON. Se omite.")
             avisos += 1
             continue
 
@@ -101,7 +99,7 @@ def cargar_catalogo(ruta_catalogo: str) -> Dict[str, float]:
             continue
 
         if not isinstance(price, (int, float)) or price < 0:
-            print(f"[WARN] Catálogo fila {idx}: 'price' inválido (>= 0 requerido). Se omite.")
+            print(f"[WARN] Catálogo fila {idx}: 'price' inválido (>= 0). Se omite.")
             avisos += 1
             continue
 
@@ -112,7 +110,9 @@ def cargar_catalogo(ruta_catalogo: str) -> Dict[str, float]:
         raise SystemExit(1)
 
     if avisos:
-        print(f"[INFO] Catálogo cargado con {avisos} aviso(s). Productos válidos: {len(catalogo)}")
+        msg = "[INFO] Catálogo cargado con "
+        msg += f"{avisos} aviso(s). Productos válidos: {len(catalogo)}"
+        print(msg)
 
     return catalogo
 
@@ -122,11 +122,11 @@ def validar_fecha_ddmmyy(fecha_txt: Any) -> Tuple[bool, str]:
     Valida una fecha con formato 'dd/mm/yy'.
 
     Args:
-        fecha_txt: Texto de fecha a validar.
+        fecha_txt: Texto de fecha.
 
     Returns:
-        (ok, valor) donde:
-          - ok = True y valor = fecha normalizada 'YYYY-MM-DD' si es válida.
+        (ok, valor):
+          - ok = True y valor = 'YYYY-MM-DD' si es válida.
           - ok = False y valor = mensaje de error si no es válida.
     """
     if not isinstance(fecha_txt, str):
@@ -138,25 +138,20 @@ def validar_fecha_ddmmyy(fecha_txt: Any) -> Tuple[bool, str]:
         return False, "Formato de fecha inválido (esperado dd/mm/yy)"
 
 
-def _subtotal_venta(venta: Dict[str, Any], catalogo: Dict[str, float]) -> Tuple[bool, float, List[str]]:
+def _subtotal_venta(
+    venta: Dict[str, Any],
+    catalogo: Dict[str, float]
+) -> Tuple[bool, float, List[str]]:
     """
     Calcula el subtotal de una venta si es válida.
 
     Reglas:
-    - `Product` debe existir en el catálogo (búsqueda case-insensitive).
+    - `Product` debe existir en el catálogo (case-insensitive).
     - `Quantity` debe ser entero (puede ser negativo).
-    - La fecha se valida pero su error no impide el cálculo.
-
-    Args:
-        venta: Objeto JSON de la venta.
-        catalogo: Diccionario de precios por producto en minúsculas.
+    - La fecha se valida, pero su error no bloquea.
 
     Returns:
-        (valida, subtotal, avisos) donde:
-            valida: True si se pudo calcular subtotal;
-                    False si la venta se omite.
-            subtotal: `quantity * price` (0.0 si no válida).
-            avisos: Lista de mensajes de advertencia/errores.
+        (valida, subtotal, avisos).
     """
     avisos: List[str] = []
 
@@ -168,24 +163,25 @@ def _subtotal_venta(venta: Dict[str, Any], catalogo: Dict[str, float]) -> Tuple[
     product = venta.get("Product")
     quantity = venta.get("Quantity")
 
-    # Fecha (no bloqueante)
-    fecha_ok, fecha_msg = validar_fecha_ddmmyy(sale_date)
-    if not fecha_ok:
-        avisos.append(f"[WARN] Venta (ID {sale_id}): {fecha_msg}")
+    ok_fecha, msg_fecha = validar_fecha_ddmmyy(sale_date)
+    if not ok_fecha:
+        avisos.append(f"[WARN] Venta (ID {sale_id}): {msg_fecha}")
 
-    # Producto
     if not isinstance(product, str) or not product.strip():
         avisos.append(f"[WARN] Venta (ID {sale_id}): 'Product' inválido.")
         return False, 0.0, avisos
 
     key = product.strip().lower()
     if key not in catalogo:
-        avisos.append(f"[WARN] Venta (ID {sale_id}): producto '{product}' no está en el catálogo. Se omite.")
+        msg = f"[WARN] Venta (ID {sale_id}): "
+        msg += f"producto '{product}' no está en el catálogo. Se omite."
+        avisos.append(msg)
         return False, 0.0, avisos
 
-    # Cantidad (entero; puede ser negativo)
     if not isinstance(quantity, (int, float)) or int(quantity) != quantity:
-        avisos.append(f"[WARN] Venta (ID {sale_id}): 'Quantity' debe ser entero.")
+        avisos.append(
+            f"[WARN] Venta (ID {sale_id}): 'Quantity' debe ser entero."
+        )
         return False, 0.0, avisos
 
     qty = int(quantity)
@@ -193,7 +189,10 @@ def _subtotal_venta(venta: Dict[str, Any], catalogo: Dict[str, float]) -> Tuple[
     return True, float(qty * price), avisos
 
 
-def procesar_ventas(ruta_ventas: str, catalogo: Dict[str, float]) -> Tuple[float, int, int, List[str]]:
+def procesar_ventas(
+    ruta_ventas: str,
+    catalogo: Dict[str, float]
+) -> Tuple[float, int, int, List[str]]:
     """
     Procesa el archivo de ventas y acumula el total.
 
@@ -202,10 +201,7 @@ def procesar_ventas(ruta_ventas: str, catalogo: Dict[str, float]) -> Tuple[float
         catalogo: Diccionario { producto_lower: precio }.
 
     Returns:
-        total: Suma de los subtotales de ventas válidas.
-        procesadas: Número de registros leídos.
-        validas: Número de ventas válidas consideradas.
-        mensajes: Lista de avisos/errores detectados.
+        total, procesadas, validas, mensajes.
     """
     data = _leer_json_lista(ruta_ventas)
 
@@ -241,8 +237,8 @@ def escribir_resultados(
         procesadas: Registros leídos.
         validas: Ventas válidas.
         mensajes: Avisos/errores.
-        segundos: Tiempo de ejecución en segundos.
-        ruta_salida: Nombre del archivo de salida.
+        segundos: Tiempo de ejecución.
+        ruta_salida: Archivo de salida.
     """
     resumen = [
         "==== Resultados de Cómputo de Ventas ====",
@@ -253,14 +249,12 @@ def escribir_resultados(
         f"Tiempo de ejecución (segundos): {segundos:.6f}",
     ]
 
-    # Consola
     print("\n".join(resumen))
     if mensajes:
         print("\n---- Avisos / Errores detectados ----")
         for aviso in mensajes:
             print(aviso)
 
-    # Archivo
     try:
         with open(ruta_salida, "w", encoding="utf-8") as fout:
             fout.write("\n".join(resumen))
@@ -275,21 +269,30 @@ def escribir_resultados(
 
 def _parse_args() -> argparse.Namespace:
     """
-    Define y parsea los argumentos de línea de comandos.
+    Define y parsea los argumentos de la línea de comandos.
 
     Returns:
         Namespace con `price_catalogue` y `sales_record`.
     """
     parser = argparse.ArgumentParser(
-        description="Calcula el costo total de ventas a partir de un catálogo y un registro de ventas."
+        description=(
+            "Calcula el costo total de ventas a partir de un catálogo y un "
+            "registro de ventas."
+        )
     )
     parser.add_argument(
         "price_catalogue",
-        help="Ruta al archivo JSON del catálogo de precios (priceCatalogue.json)",
+        help=(
+            "Ruta al archivo JSON del catálogo de precios "
+            "(priceCatalogue.json)"
+        ),
     )
     parser.add_argument(
         "sales_record",
-        help="Ruta al archivo JSON del registro de ventas (salesRecord.json)",
+        help=(
+            "Ruta al archivo JSON del registro de ventas "
+            "(salesRecord.json)"
+        ),
     )
     return parser.parse_args()
 
@@ -302,7 +305,10 @@ def main() -> None:
     inicio = time.perf_counter()
 
     catalogo = cargar_catalogo(args.price_catalogue)
-    total, procesadas, validas, mensajes = procesar_ventas(args.sales_record, catalogo)
+    total, procesadas, validas, mensajes = procesar_ventas(
+        args.sales_record,
+        catalogo,
+    )
 
     fin = time.perf_counter()
     escribir_resultados(
