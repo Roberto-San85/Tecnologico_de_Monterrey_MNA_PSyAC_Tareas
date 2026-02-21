@@ -1,0 +1,20 @@
+[tool.flake8]
+max-line-length = 100
+select = ["E", "W", "F", "C90"]
+exclude = [
+  ".git",
+  "__pycache__",
+  "build",
+  "dist",
+  ".venv",
+  "venv",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src/reservation_system"]
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+skip_covered = false
