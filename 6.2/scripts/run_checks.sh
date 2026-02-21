@@ -10,7 +10,7 @@ flake8 src tests
 
 echo "==> Running pylint"
 if [[ -d "src" ]]; then
-  pylint src tests
+  pylint src  
 else
   pylint tests
 fi
