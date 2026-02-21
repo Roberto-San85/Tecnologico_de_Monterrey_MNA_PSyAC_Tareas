@@ -18,3 +18,4 @@ fi
 echo "==> Running unit tests with coverage"
 coverage run -m unittest discover -s tests -p "test_*.py" -v
 coverage report -m --include="src/*"
+coverage html
