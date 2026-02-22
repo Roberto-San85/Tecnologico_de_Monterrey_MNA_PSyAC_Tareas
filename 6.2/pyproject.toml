@@ -15,6 +15,6 @@ branch = true
 source = ["src/reservation_system"]
 
 [tool.coverage.report]
-fail_under = 0
+fail_under = 85
 show_missing = true
 skip_covered = false
