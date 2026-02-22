@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Optional
-from .models import Hotel
+
+from .models import Hotel, Customer
 from .storage import JsonStorage
 
 
@@ -49,4 +50,52 @@ class HotelService:
         if updated is None:
             return None
         self.storage.save_hotels(new_hotels)
+        return updated
+
+
+class CustomerService:
+    """Operaciones para clientes."""
+
+    def __init__(self, storage: JsonStorage) -> None:
+        self.storage = storage
+
+    def create(self, name: str, email: str) -> Customer:
+        customers = self.storage.load_customers()
+        c = Customer.create(name, email)
+        customers.append(c)
+        self.storage.save_customers(customers)
+        return c
+
+    def delete(self, customer_id: str) -> bool:
+        customers = self.storage.load_customers()
+        new_customers = [c for c in customers if c.id != customer_id]
+        if len(new_customers) == len(customers):
+            return False
+        self.storage.save_customers(new_customers)
+        return True
+
+    def get(self, customer_id: str) -> Optional[Customer]:
+        for c in self.storage.load_customers():
+            if c.id == customer_id:
+                return c
+        return None
+
+    def update(self, customer_id: str, *, name: Optional[str] = None,
+               email: Optional[str] = None) -> Optional[Customer]:
+        customers = self.storage.load_customers()
+        updated = None
+        new_customers: list[Customer] = []
+        for c in customers:
+            if c.id == customer_id:
+                new_name = (name.strip() if isinstance(name, str)
+                            and name.strip() else c.name)
+                new_email = (email.strip() if isinstance(email, str)
+                             and email.strip() else c.email)
+                updated = Customer(id=c.id, name=new_name, email=new_email)
+                new_customers.append(updated)
+            else:
+                new_customers.append(c)
+        if updated is None:
+            return None
+        self.storage.save_customers(new_customers)
         return updated
