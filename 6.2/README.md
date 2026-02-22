@@ -7,4 +7,10 @@ cobertura y analizadores estáticos (Flake8 y Pylint).
 
 ### 1. Análisis de Errores de Pylint – PEP 8
 Evidencia:
+
 ![evidencia pylint](./evidencia/pylint.png)
+
+### 2. Análisis de Errores de Flake
+Evidencia:
+
+![evidencia flake](./evidencia/flake.png)

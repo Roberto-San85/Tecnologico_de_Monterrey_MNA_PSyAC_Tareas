@@ -10,6 +10,8 @@ export PYTHONPATH="$ROOT_DIR"
 echo "==> Running flake8"
 flake8 src tests
 
+echo "No errors found"
+
 echo "==> Running pylint"
 if [[ -d "src" ]]; then
   pylint src
