@@ -6,7 +6,8 @@ import os
 import tempfile
 from dataclasses import asdict
 from pathlib import Path
-from .models import Hotel
+
+from .models import Hotel, Customer, Reservation, date_from_iso, date_to_iso
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,6 +20,8 @@ class JsonStorage:
         self.base_dir.mkdir(parents=True, exist_ok=True)
         self._files = {
             "hotels": self.base_dir / "hotels.json",
+            "customers": self.base_dir / "customers.json",
+            "reservations": self.base_dir / "reservations.json"
         }
         for f in self._files.values():
             if not f.exists():
@@ -68,3 +71,45 @@ class JsonStorage:
 
     def save_hotels(self, hotels: Iterable[Hotel]) -> None:
         self._safe_dump(self._files["hotels"], (asdict(h) for h in hotels))
+
+    # Métodos para customers
+    def load_customers(self) -> list[Customer]:
+        items: list[Customer] = []
+        for obj in self._safe_load(self._files["customers"]):
+            try:
+                items.append(Customer(id=str(obj["id"]), name=str(obj["name"]),
+                                      email=str(obj["email"])))
+            except (json.JSONDecodeError, ValueError,
+                    TypeError) as exc:  # noqa: BLE001
+                LOGGER.error("Customer inválido en JSON: %s", exc)
+        return items
+
+    def save_customers(self, customers: Iterable[Customer]) -> None:
+        self._safe_dump(self._files["customers"],
+                        (asdict(c) for c in customers))
+
+    # Métodos para reservations
+    def load_reservations(self) -> list[Reservation]:
+        items: list[Reservation] = []
+        for obj in self._safe_load(self._files["reservations"]):
+            try:
+                items.append(Reservation(
+                    id=str(obj["id"]),
+                    customer_id=str(obj["customer_id"]),
+                    hotel_id=str(obj["hotel_id"]),
+                    check_in=date_from_iso(str(obj["check_in"])),
+                    check_out=date_from_iso(str(obj["check_out"])),
+                ))
+            except (json.JSONDecodeError, ValueError,
+                    TypeError) as exc:  # noqa: BLE001
+                LOGGER.error("Reservation inválida en JSON: %s", exc)
+        return items
+
+    def save_reservations(self, reservations: Iterable[Reservation]) -> None:
+        def to_dict(r: Reservation) -> dict:
+            d = asdict(r)
+            d["check_in"] = date_to_iso(r.check_in)
+            d["check_out"] = date_to_iso(r.check_out)
+            return d
+        self._safe_dump(self._files["reservations"],
+                        (to_dict(r) for r in reservations))
