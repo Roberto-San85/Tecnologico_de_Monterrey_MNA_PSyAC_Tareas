@@ -147,3 +147,8 @@ Se cubren **al menos** los siguientes **casos negativos** (≥5 solicitados por 
 Evidencia:
 
 ![evidencia coverage](./evidencia/coverage.png)
+
+### 5. Commits convencionales
+Evidencia:
+
+![evidencia commits](./evidencia/commits.png)
