@@ -1,3 +1,4 @@
+# pylint: disable=consider-using-with
 import tempfile
 import unittest
 from datetime import date

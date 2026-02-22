@@ -5,15 +5,17 @@ set -euo pipefail
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
 
+export PYTHONPATH="$ROOT_DIR"
+
 echo "==> Running flake8"
 flake8 src tests
 
 echo "==> Running pylint"
 if [[ -d "src" ]]; then
-  pylint src  
-else
-  pylint tests
+  pylint src
 fi
+
+pylint tests
 
 echo "==> Running unit tests with coverage"
 coverage run -m unittest discover -s tests -p "test_*.py" -v

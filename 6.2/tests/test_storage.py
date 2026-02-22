@@ -1,3 +1,4 @@
+# pylint: disable=consider-using-with
 import os
 import json
 import tempfile
